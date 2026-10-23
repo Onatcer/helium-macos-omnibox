@@ -65,7 +65,7 @@ jobs:
           export SISO_PATH="${SISO_PATH:-$_siso_path}"
           python3 "$_depot_tools_dir/autoninja.py" -C "$_out_dir" -k 0 \
             chrome/browser/ui/views/helium/command_bar:impl \
-            obj/chrome/browser/ui/ui/browser_command_controller.o \
+            chrome/browser/ui:browser_command_controller_impl \
             2>&1 | tee -a "$GITHUB_WORKSPACE/command_bar_check.log"
       - name: Report compile errors as annotations
         if: failure()
