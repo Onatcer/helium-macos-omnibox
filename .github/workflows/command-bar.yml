@@ -1,0 +1,87 @@
+name: Command bar build
+
+# Builds the fork with the command bar patch:
+#   1. "check" compiles only the command bar code and the Cmd+T hook (fast),
+#   2. "build" runs Helium's regular chained arm64 build once the check passes.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_check:
+        description: "Skip the quick compile check"
+        type: boolean
+        default: false
+      check_only:
+        description: "Only run the quick compile check"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: command-bar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Quick compile check (command bar only)
+    if: ${{ !inputs.skip_check }}
+    runs-on: macos-latest
+    timeout-minutes: 340
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          persist-credentials: false
+      - uses: ./.github/actions/prepare-environment
+      - name: Download, unpack and patch sources
+        run: |
+          set -o pipefail
+          source ./devutils/shared.sh
+          prepare_sources | tee -a "$GITHUB_WORKSPACE/command_bar_check.log"
+          rm -rf build/download_cache
+      - name: Configure build
+        run: |
+          set -o pipefail
+          source ./devutils/shared.sh
+          configure_build arm64 ci | tee -a "$GITHUB_WORKSPACE/command_bar_check.log"
+      - name: Compile command bar
+        env:
+          SCCACHE_GHA_ENABLED: "on"
+          SCCACHE_GHA_VERSION: arm64
+          SCCACHE_WEBDAV_KEY_PREFIX: arm64
+        run: |
+          set -o pipefail
+          source ./devutils/shared.sh
+          cd "$_src_dir"
+          export SISO_PATH="${SISO_PATH:-$_siso_path}"
+          python3 "$_depot_tools_dir/autoninja.py" -C "$_out_dir" -k 0 \
+            chrome/browser/ui/views/helium/command_bar:impl \
+            obj/chrome/browser/ui/ui/browser_command_controller.o \
+            2>&1 | tee -a "$GITHUB_WORKSPACE/command_bar_check.log"
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: command_bar_check_log
+          path: command_bar_check.log
+
+  build:
+    name: Full arm64 build
+    needs: check
+    if: >-
+      ${{ always() && !inputs.check_only &&
+          (needs.check.result == 'success' || needs.check.result == 'skipped') }}
+    uses: ./.github/workflows/building.yml
+    secrets: inherit
+    with:
+      arch: arm64
+      os: macos-latest
