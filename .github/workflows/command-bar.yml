@@ -67,6 +67,21 @@ jobs:
             chrome/browser/ui/views/helium/command_bar:impl \
             obj/chrome/browser/ui/ui/browser_command_controller.o \
             2>&1 | tee -a "$GITHUB_WORKSPACE/command_bar_check.log"
+      - name: Report compile errors as annotations
+        if: failure()
+        run: |
+          # Job logs aren't reachable everywhere; annotations are readable
+          # through the API, so surface the useful part of the log there.
+          log="$GITHUB_WORKSPACE/command_bar_check.log"
+          grep -E ': (fatal )?error: ' "$log" | sort -u | head -40 | while IFS= read -r line; do
+            echo "::error title=compile::${line//%/%25}"
+          done
+          grep -E '^(FAILED|ninja: error|siso|Error:|ERROR)' "$log" | head -8 | while IFS= read -r line; do
+            echo "::error title=build::${line//%/%25}"
+          done
+          tail -n 25 "$log" | while IFS= read -r line; do
+            [ -n "$line" ] && echo "::warning title=log-tail::${line//%/%25}"
+          done
       - name: Upload log
         if: always()
         uses: actions/upload-artifact@v4
