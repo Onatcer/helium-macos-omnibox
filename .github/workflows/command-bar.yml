@@ -63,12 +63,19 @@ jobs:
           source ./devutils/shared.sh
           cd "$_src_dir"
           export SISO_PATH="${SISO_PATH:-$_siso_path}"
-          python3 "$_depot_tools_dir/autoninja.py" -C "$_out_dir" -k 0 \
-            chrome/browser/ui/views/helium/command_bar:impl \
-            chrome/browser/ui:browser_command_controller_impl \
+          # Build the object files themselves, not the GN targets: a target
+          # pulls in everything it links against (most of the browser), an
+          # object file only needs the headers it includes to be generated.
+          obj=obj/chrome/browser/ui/views/helium/command_bar/impl
+          timeout -s INT 270m python3 "$_depot_tools_dir/autoninja.py" -C "$_out_dir" -k 0 \
+            "$obj/command_bar_local_results.o" \
+            "$obj/command_bar_omnibox_client.o" \
+            "$obj/command_bar_row_view.o" \
+            "$obj/command_bar_view.o" \
+            obj/chrome/browser/ui/browser_command_controller_impl/browser_command_controller.o \
             2>&1 | tee -a "$GITHUB_WORKSPACE/command_bar_check.log"
       - name: Report compile errors as annotations
-        if: failure()
+        if: failure() || cancelled()
         run: |
           # Job logs aren't reachable everywhere; annotations are readable
           # through the API, so surface the useful part of the log there.
