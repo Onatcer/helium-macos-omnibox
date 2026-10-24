@@ -240,7 +240,7 @@
  bool KeychainKeyProvider::UseForEncryption() {
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -11998,6 +11998,9 @@ Check your passwords anytime in <ph name
+@@ -12080,6 +12080,9 @@ Check your passwords anytime in <ph name
        </if> <!-- not is_android -->
  
        <if expr="is_macosx">

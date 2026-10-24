@@ -254,7 +254,7 @@
 +@end
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -3357,6 +3357,8 @@ static_library("ui") {
+@@ -3359,6 +3359,8 @@ static_library("ui") {
        "browser_shortcuts/browser_shortcut_platform_mac.h",
        "browser_shortcuts/browser_shortcut_platform_mac.mm",
        "views/helium/frame_corner_radius_mac.mm",

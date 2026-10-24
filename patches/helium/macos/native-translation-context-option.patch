@@ -1,6 +1,6 @@
 --- a/chrome/app/generated_resources.grd
 +++ b/chrome/app/generated_resources.grd
-@@ -1531,6 +1531,9 @@ are declared in tools/grit/grit_args.gni
+@@ -1613,6 +1613,9 @@ are declared in tools/grit/grit_args.gni
          <message name="IDS_PROFILE_ROW_VERIFY_MESSAGE" desc="A label to indicate that the profile needs credential verification (reauthentication). This is a shorter version of 'Verify it's you' that is used in other places.">
            Verify
          </message>

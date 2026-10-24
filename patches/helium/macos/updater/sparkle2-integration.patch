@@ -183,7 +183,7 @@
  import("//components/captive_portal/core/features.gni")
  import("//components/compose/features.gni")
  import("//components/enterprise/buildflags/buildflags.gni")
-@@ -4606,6 +4607,10 @@ static_library("ui") {
+@@ -4614,6 +4615,10 @@ static_library("ui") {
        "//ui/base/cursor",
      ]
  
